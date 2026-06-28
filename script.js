@@ -67,6 +67,78 @@ const products = [
     }
 ];
 
+// Hero Background Slideshow
+const heroImages = [
+    "produtos/Vestido Ayla/vestido_ayla (1).jpeg",
+    "produtos/Conjunto Bella/cojunto_bella (1).jpeg",
+    "produtos/Vestido Fluyte/vestido_fluyte.jpeg",
+    "produtos/Body Tule/body_tule (1).jpeg",
+    "produtos/T-shirt Premium/t-shirt_premium (1).jpeg"
+];
+
+let currentHeroImage = 0;
+let heroInterval;
+
+function initHeroSlideshow() {
+    const heroBackground = document.getElementById('hero-background');
+    const heroDots = document.getElementById('hero-dots');
+    
+    // Create slide elements
+    heroImages.forEach((imageUrl, index) => {
+        const slide = document.createElement('div');
+        slide.className = `hero-slide ${index === 0 ? 'active' : ''}`;
+        slide.style.backgroundImage = `url('${imageUrl}')`;
+        heroBackground.appendChild(slide);
+    });
+    
+    // Create dots
+    heroImages.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = `hero-dot ${index === 0 ? 'active' : ''}`;
+        dot.onclick = () => goToHeroSlide(index);
+        heroDots.appendChild(dot);
+    });
+    
+    // Start slideshow
+    heroInterval = setInterval(nextHeroSlide, 5000);
+}
+
+function updateHeroSlides() {
+    const slides = document.querySelectorAll('.hero-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+    
+    slides.forEach((slide, index) => {
+        if (index === currentHeroImage) {
+            slide.classList.add('active');
+            slide.classList.remove('slide-out');
+        } else if (index === (currentHeroImage - 1 + heroImages.length) % heroImages.length) {
+            slide.classList.add('slide-out');
+            slide.classList.remove('active');
+        } else {
+            slide.classList.remove('active', 'slide-out');
+        }
+    });
+    
+    // Update dots
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentHeroImage);
+    });
+}
+
+function nextHeroSlide() {
+    currentHeroImage = (currentHeroImage + 1) % heroImages.length;
+    updateHeroSlides();
+}
+
+function goToHeroSlide(index) {
+    currentHeroImage = index;
+    updateHeroSlides();
+    
+    // Reset interval
+    clearInterval(heroInterval);
+    heroInterval = setInterval(nextHeroSlide, 5000);
+}
+
 // Shopping Cart
 let cart = [];
 
@@ -84,6 +156,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 2500);
 
+    // Initialize hero slideshow
+    initHeroSlideshow();
+
     // Load products
     renderProducts();
 
@@ -99,17 +174,46 @@ function renderProducts() {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
         productCard.innerHTML = `
-            <img src="${product.image}" alt="${product.name}" class="product-image">
+            <div class="product-image-container">
+                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <button class="favorite-btn" onclick="toggleFavorite(${product.id})">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                </button>
+            </div>
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
                 <p class="product-description">${product.description}</p>
                 <span class="product-size">${product.size}</span>
-                <p class="product-price">R$ ${product.price.toFixed(2).replace('.', ',')}</p>
-                <button class="add-to-cart" onclick="addToCart(${product.id})">Adicionar ao Carrinho</button>
+                <div class="product-price-section">
+                    <p class="product-price">R$ ${product.price.toFixed(2).replace('.', ',')}</p>
+                    <p class="product-installment">ou ${(product.price / 6).toFixed(2).replace('.', ',')}x R$ ${(product.price / 6).toFixed(2).replace('.', ',')} sem juros</p>
+                </div>
+                <button class="add-to-cart" onclick="addToCart(${product.id})">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                    Adicionar
+                </button>
             </div>
         `;
         productsGrid.appendChild(productCard);
     });
+}
+
+// Toggle Favorite
+function toggleFavorite(productId) {
+    const product = products.find(p => p.id === productId);
+    showNotification(`${product.name} adicionado aos favoritos!`);
+}
+
+// Toggle Mobile Menu
+function toggleMenu() {
+    const navLinks = document.querySelector('.nav-links');
+    navLinks.classList.toggle('mobile-active');
 }
 
 // Add to Cart
