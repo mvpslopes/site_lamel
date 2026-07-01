@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaMel - Moda Feminina</title>
-    <meta name="description" content="LaMel - Moda feminina sofisticada. Vestidos, conjuntos e peças exclusivas com frete grátis para todo o Brasil e até 6x sem juros.">
+    <meta name="description" content="LaMel - Moda feminina sofisticada. Vestidos, conjuntos e peças exclusivas com frete grátis para todo o Brasil e parcelamento em até 12x no cartão.">
 
     <!-- Open Graph / redes sociais (atualize a URL do dominio ao publicar) -->
     <meta property="og:type" content="website">
@@ -20,7 +20,7 @@
 
     <link rel="icon" type="image/png" href="logo/logo_lamel_-3.png">
     <link rel="apple-touch-icon" href="logo/logo_lamel_-3.png">
-    <link rel="stylesheet" href="styles.css?v=12">
+    <link rel="stylesheet" href="styles.css?v=14">
     <style>
         /* Botão Área Interna — crítico (funciona mesmo se styles.css não carregar) */
         .header .nav-icons .internal-area-btn,
@@ -172,8 +172,8 @@
                                 <line x1="1" y1="10" x2="23" y2="10"/>
                             </svg>
                         </div>
-                        <h3 class="feature-title">PARCELE EM ATÉ 6X</h3>
-                        <p class="feature-text">sem juros no cartão</p>
+                        <h3 class="feature-title">PARCELE EM ATÉ 12X</h3>
+                        <p class="feature-text">no cartão</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -233,8 +233,8 @@
                                 <line x1="1" y1="10" x2="23" y2="10"/>
                             </svg>
                         </div>
-                        <h3 class="feature-title">PARCELE EM ATÉ 6X</h3>
-                        <p class="feature-text">sem juros no cartão</p>
+                        <h3 class="feature-title">PARCELE EM ATÉ 12X</h3>
+                        <p class="feature-text">no cartão</p>
                     </div>
                     <div class="feature-card">
                         <div class="feature-icon">
@@ -428,14 +428,21 @@
                             <span>Pix <small>10% off</small></span>
                         </label>
                         <label class="checkout-payment-option">
-                            <input type="radio" name="payment" value="Cartão (até 6x sem juros)">
-                            <span>Cartão <small>6x sem juros</small></span>
+                            <input type="radio" name="payment" value="Cartão (até 12x)">
+                            <span>Cartão <small>até 12x</small></span>
                         </label>
                         <label class="checkout-payment-option">
                             <input type="radio" name="payment" value="Dinheiro">
                             <span>Dinheiro</span>
                         </label>
                     </div>
+                </div>
+                <div class="checkout-field checkout-installments-field hidden" id="checkout-installments-field">
+                    <label for="checkout-installments">Parcelas no cartão *</label>
+                    <select id="checkout-installments" name="installments" class="checkout-input">
+                        <option value="">Selecione as parcelas</option>
+                    </select>
+                    <p class="checkout-installment-preview" id="checkout-installment-preview"></p>
                 </div>
                 <div class="checkout-field">
                     <label for="checkout-notes">Observações</label>
@@ -491,6 +498,7 @@
                     <div class="product-price-section">
                         <p id="modal-price" class="product-price"></p>
                         <p id="modal-installment" class="product-installment"></p>
+                        <div id="modal-installment-table" class="modal-installment-table"></div>
                     </div>
                     <button type="button" class="add-to-cart modal-add-cart" id="modal-add-cart">Adicionar ao carrinho</button>
                     <a href="#" class="btn-back-home" onclick="goToHomePage(); return false;">← Voltar para página inicial</a>
@@ -516,6 +524,6 @@
         </svg>
     </a>
 
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=8"></script>
 </body>
 </html>

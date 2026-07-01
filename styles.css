@@ -851,6 +851,73 @@ h1, h2, h3, h4 {
     font-weight: 500;
 }
 
+.modal-installment-table {
+    margin-top: 16px;
+}
+
+.installment-table-wrap {
+    background: var(--light-gray);
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.installment-table-title {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--primary-color);
+    margin-bottom: 12px;
+}
+
+.installment-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.installment-table th,
+.installment-table td {
+    padding: 8px 10px;
+    text-align: left;
+    border-bottom: 1px solid rgba(98, 35, 49, 0.08);
+}
+
+.installment-table th {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-light);
+    font-weight: 600;
+}
+
+.installment-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.installment-table td:first-child {
+    font-weight: 600;
+    color: var(--primary-color);
+    width: 72px;
+}
+
+.installment-table td:nth-child(2) {
+    font-weight: 600;
+    color: var(--secondary-color);
+}
+
+.installment-cash {
+    color: var(--text-light);
+    font-size: 12px;
+}
+
+.installment-table-note {
+    margin-top: 10px;
+    font-size: 11px;
+    color: var(--text-light);
+    line-height: 1.4;
+}
+
 .product-size {
     font-size: 12px;
     color: var(--text-light);
@@ -1796,6 +1863,17 @@ h1, h2, h3, h4 {
 
 .checkout-back:hover {
     border-color: var(--primary-color);
+}
+
+.checkout-installments-field.hidden {
+    display: none;
+}
+
+.checkout-installment-preview {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary-color);
 }
 
 .empty-cart {

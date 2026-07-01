@@ -84,6 +84,102 @@ function findProduct(productId) {
     return products.find(p => normalizeId(p.id) === id);
 }
 
+/**
+ * Fatores de total na maquininha (referência: R$ 200,00).
+ * 6x–12x: valores exatos da foto; 2x–5x: interpolados entre à vista e 6x.
+ */
+const INSTALLMENT_TOTAL_FACTORS = {
+    1: 1.0000,
+    2: 1.02864,
+    3: 1.05728,
+    4: 1.08592,
+    5: 1.11456,
+    6: 1.14320,
+    7: 1.16720,
+    8: 1.16730,
+    9: 1.19690,
+    10: 1.20650,
+    11: 1.20660,
+    12: 1.22110
+};
+
+function getInstallmentQuote(price, months) {
+    const n = Math.min(12, Math.max(1, Math.round(months)));
+    const factor = INSTALLMENT_TOTAL_FACTORS[n] || 1;
+    const total = Math.round(price * factor * 100) / 100;
+    const perMonth = Math.round((total / n) * 100) / 100;
+
+    return { months: n, perMonth, total, factor };
+}
+
+function formatInstallmentLine(price, months) {
+    const quote = getInstallmentQuote(price, months);
+    if (months === 1) {
+        return `${formatCartMoney(quote.total)} à vista`;
+    }
+    return `${months}x de ${formatCartMoney(quote.perMonth)}`;
+}
+
+function getProductInstallmentSummary(price) {
+    const quote12 = getInstallmentQuote(price, 12);
+    return `ou até 12x de ${formatCartMoney(quote12.perMonth)}`;
+}
+
+function buildInstallmentTableHTML(price) {
+    const rows = Array.from({ length: 12 }, (_, index) => {
+        const months = index + 1;
+        const quote = getInstallmentQuote(price, months);
+        const totalCell = months === 1
+            ? '<span class="installment-cash">à vista</span>'
+            : formatCartMoney(quote.total);
+
+        return `
+            <tr>
+                <td>${months}x</td>
+                <td>${formatCartMoney(quote.perMonth)}</td>
+                <td>${totalCell}</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="installment-table-wrap">
+            <p class="installment-table-title">Parcelamento no cartão</p>
+            <table class="installment-table">
+                <thead>
+                    <tr>
+                        <th>Parcelas</th>
+                        <th>Valor</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <p class="installment-table-note">Valores calculados conforme tabela da maquininha (ref. R$ 200,00).</p>
+        </div>
+    `;
+}
+
+function buildInstallmentWhatsAppLines(price) {
+    const lines = ['*Opções de parcelamento no cartão:*'];
+    for (let months = 1; months <= 12; months++) {
+        const quote = getInstallmentQuote(price, months);
+        if (months === 1) {
+            lines.push(`• À vista: ${formatCartMoney(quote.total)}`);
+        } else {
+            lines.push(`• ${months}x de ${formatCartMoney(quote.perMonth)} (total ${formatCartMoney(quote.total)})`);
+        }
+    }
+    return lines;
+}
+
+function renderModalInstallmentTable(price) {
+    const container = document.getElementById('modal-installment-table');
+    if (container) {
+        container.innerHTML = buildInstallmentTableHTML(price);
+    }
+}
+
 // Hero Background Slideshow
 let heroImages = [
     "produtos/Vestido Ayla/vestido_ayla (1).jpeg",
@@ -183,6 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 2500);
 
     bindProductsGridClick();
+    initCheckoutFormHandlers();
 
     // Carregar produtos da API e inicializar vitrine
     loadCatalogData();
@@ -291,7 +388,7 @@ function bindProductsGridClick() {
 function createProductCard(product) {
     const secondaryImage = (product.images && product.images.length > 1) ? product.images[1] : product.image;
     const badgeHtml = product.badge ? `<span class="product-badge">${product.badge}</span>` : '';
-    const installment = (product.price / 6).toFixed(2).replace('.', ',');
+    const installment = getProductInstallmentSummary(product.price);
 
     const productCard = document.createElement('div');
     productCard.className = 'product-card';
@@ -317,7 +414,7 @@ function createProductCard(product) {
             <span class="product-size">${product.size}</span>
             <div class="product-price-section">
                 <p class="product-price">R$ ${product.price.toFixed(2).replace('.', ',')}</p>
-                <p class="product-installment">ou 6x de R$ ${installment} sem juros</p>
+                    <p class="product-installment">${installment}</p>
             </div>
             <button type="button" class="add-to-cart">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -464,10 +561,11 @@ function openProductModal(productId) {
     title.textContent = product.name;
     description.textContent = product.description || 'Sem descrição disponível.';
     if (size) size.textContent = product.size || '';
-    price.textContent = `R$ ${product.price.toFixed(2).replace('.', ',')}`;
+    price.textContent = formatCartMoney(product.price);
     if (installment) {
-        installment.textContent = `ou 6x de R$ ${(product.price / 6).toFixed(2).replace('.', ',')} sem juros`;
+        installment.textContent = getProductInstallmentSummary(product.price);
     }
+    renderModalInstallmentTable(product.price);
 
     if (product.badge && badge) {
         badge.textContent = product.badge;
@@ -791,8 +889,17 @@ function buildWhatsAppOrderMessage(cartItems, customer = {}) {
 
     if (isPix) {
         lines.push(`*TOTAL COM PIX (10% OFF): ${formatCartMoney(pixTotal)}*`);
-    } else {
-        lines.push(`_ou 6x de ${formatCartMoney(total / 6)} sem juros_`);
+    } else if ((customer.payment || '').toLowerCase().includes('cartão') || (customer.payment || '').toLowerCase().includes('cartao')) {
+        const months = Number(customer.installments) || 12;
+        const quote = getInstallmentQuote(total, months);
+        lines.push('');
+        lines.push('*PARCELAMENTO ESCOLHIDO NO CARTÃO:*');
+        if (months === 1) {
+            lines.push(`• À vista: ${formatCartMoney(quote.total)}`);
+        } else {
+            lines.push(`• ${months}x de ${formatCartMoney(quote.perMonth)}`);
+            lines.push(`• Total parcelado: ${formatCartMoney(quote.total)}`);
+        }
     }
 
     lines.push(
@@ -816,6 +923,92 @@ function buildWhatsAppOrderMessage(cartItems, customer = {}) {
     return lines.join('\n');
 }
 
+function getCartTotal() {
+    return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+}
+
+function isCardPayment(paymentValue) {
+    const value = (paymentValue || '').toLowerCase();
+    return value.includes('cartão') || value.includes('cartao');
+}
+
+function renderCheckoutInstallmentSelect(total, selectedMonths) {
+    const select = document.getElementById('checkout-installments');
+    const preview = document.getElementById('checkout-installment-preview');
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Selecione as parcelas</option>';
+
+    for (let months = 1; months <= 12; months++) {
+        const quote = getInstallmentQuote(total, months);
+        const option = document.createElement('option');
+        option.value = String(months);
+        option.textContent = months === 1
+            ? `À vista — ${formatCartMoney(quote.total)}`
+            : `${months}x de ${formatCartMoney(quote.perMonth)} (total ${formatCartMoney(quote.total)})`;
+        select.appendChild(option);
+    }
+
+    if (selectedMonths) {
+        select.value = String(selectedMonths);
+    }
+
+    updateCheckoutInstallmentPreview(total, select.value);
+}
+
+function updateCheckoutInstallmentPreview(total, months) {
+    const preview = document.getElementById('checkout-installment-preview');
+    if (!preview || !months) {
+        if (preview) preview.textContent = '';
+        return;
+    }
+
+    const quote = getInstallmentQuote(total, Number(months));
+    preview.textContent = months === '1'
+        ? `Pagamento à vista: ${formatCartMoney(quote.total)}`
+        : `${months}x de ${formatCartMoney(quote.perMonth)} — total ${formatCartMoney(quote.total)}`;
+}
+
+function toggleCheckoutInstallmentsField(form) {
+    const field = document.getElementById('checkout-installments-field');
+    const select = document.getElementById('checkout-installments');
+    const paymentInput = form.querySelector('input[name="payment"]:checked');
+    if (!field || !select) return;
+
+    const show = paymentInput && isCardPayment(paymentInput.value);
+    field.classList.toggle('hidden', !show);
+    select.required = show;
+
+    if (!show) {
+        select.value = '';
+        updateCheckoutInstallmentPreview(getCartTotal(), '');
+    }
+}
+
+function initCheckoutFormHandlers() {
+    const form = document.getElementById('checkout-form');
+    if (!form || form.dataset.handlersBound === 'true') return;
+
+    form.dataset.handlersBound = 'true';
+
+    form.querySelectorAll('input[name="payment"]').forEach((input) => {
+        input.addEventListener('change', () => {
+            const total = getCartTotal();
+            toggleCheckoutInstallmentsField(form);
+            if (isCardPayment(input.value)) {
+                renderCheckoutInstallmentSelect(total, form.installments.value || 12);
+            }
+        });
+    });
+
+    const select = document.getElementById('checkout-installments');
+    if (select) {
+        select.addEventListener('change', () => {
+            updateCheckoutInstallmentPreview(getCartTotal(), select.value);
+        });
+    }
+}
+
 function loadCheckoutInfo() {
     try {
         return JSON.parse(localStorage.getItem('lamel-checkout-info') || '{}');
@@ -831,7 +1024,8 @@ function saveCheckoutInfo(data) {
         address: data.address,
         cep: data.cep,
         city: data.city,
-        payment: data.payment
+        payment: data.payment,
+        installments: data.installments || null
     }));
 }
 
@@ -873,6 +1067,16 @@ function openCheckoutModal() {
         if (paymentInput) paymentInput.checked = true;
     } else {
         form.querySelectorAll('input[name="payment"]').forEach(input => { input.checked = false; });
+    }
+
+    initCheckoutFormHandlers();
+    toggleCheckoutInstallmentsField(form);
+
+    const total = getCartTotal();
+    if (isCardPayment(saved.payment || form.querySelector('input[name="payment"]:checked')?.value)) {
+        renderCheckoutInstallmentSelect(total, saved.installments || 12);
+    } else {
+        renderCheckoutInstallmentSelect(total, '');
     }
 
     updateCheckoutSummary();
@@ -917,11 +1121,17 @@ function submitCheckoutWhatsApp(event) {
         cep: form.cep.value.trim(),
         city: form.city.value.trim(),
         payment: paymentInput.value,
+        installments: form.installments?.value || '',
         notes: form.notes.value.trim()
     };
 
     if (!customer.name || !customer.phone || !customer.address || !customer.cep || !customer.city) {
         showNotification('Preencha todos os campos obrigatórios.');
+        return;
+    }
+
+    if (isCardPayment(customer.payment) && !customer.installments) {
+        showNotification('Selecione a quantidade de parcelas no cartão.');
         return;
     }
 
