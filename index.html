@@ -4,8 +4,81 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LaMel - Moda Feminina</title>
+    <meta name="description" content="LaMel - Moda feminina sofisticada. Vestidos, conjuntos e peças exclusivas com frete grátis para todo o Brasil e até 6x sem juros.">
+
+    <!-- Open Graph / redes sociais (atualize a URL do dominio ao publicar) -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="LaMel">
+    <meta property="og:title" content="LaMel - Moda Feminina">
+    <meta property="og:description" content="Peças exclusivas para mulheres que valorizam estilo, elegância e autenticidade.">
+    <meta property="og:image" content="logo/logo_lamel_-2.png">
+    <meta property="og:locale" content="pt_BR">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LaMel - Moda Feminina">
+    <meta name="twitter:description" content="Peças exclusivas para mulheres que valorizam estilo, elegância e autenticidade.">
+    <meta name="twitter:image" content="logo/logo_lamel_-2.png">
+
     <link rel="icon" type="image/png" href="logo/logo_lamel_-3.png">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="apple-touch-icon" href="logo/logo_lamel_-3.png">
+    <link rel="stylesheet" href="styles.css?v=12">
+    <style>
+        /* Botão Área Interna — crítico (funciona mesmo se styles.css não carregar) */
+        .header .nav-icons .internal-area-btn,
+        .header .nav-icons a.internal-area-btn,
+        .header .nav-icons a.internal-area-btn:link,
+        .header .nav-icons a.internal-area-btn:visited,
+        .header .nav-icons a.internal-area-btn:active,
+        .header .nav-icons button.internal-area-btn {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 6px !important;
+            padding: 11px 20px !important;
+            border: none !important;
+            border-radius: 10px !important;
+            background: #622331 !important;
+            background-color: #622331 !important;
+            color: #ffffff !important;
+            font-family: 'Montserrat', Arial, sans-serif !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1.2px !important;
+            text-decoration: none !important;
+            white-space: nowrap !important;
+            box-shadow: 0 2px 8px rgba(98, 35, 49, 0.2) !important;
+            cursor: pointer !important;
+            line-height: 1 !important;
+            flex-shrink: 0 !important;
+            -webkit-appearance: none !important;
+            appearance: none !important;
+        }
+        .header .nav-icons .internal-area-icon {
+            flex-shrink: 0 !important;
+            stroke: #ffffff !important;
+        }
+        .header .nav-icons .internal-area-btn:hover,
+        .header .nav-icons a.internal-area-btn:hover {
+            background: #7a2d3e !important;
+            background-color: #7a2d3e !important;
+            color: #ffffff !important;
+            text-decoration: none !important;
+            transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+            .header .nav-icons .internal-area-btn,
+            .header .nav-icons a.internal-area-btn {
+                padding: 8px 12px !important;
+                font-size: 9px !important;
+                border-radius: 8px !important;
+                flex-shrink: 0 !important;
+            }
+            .header .nav-icons {
+                flex-shrink: 0 !important;
+                flex-wrap: nowrap !important;
+            }
+        }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,36 +94,6 @@
 
     <!-- Main Content -->
     <div id="main-content" class="main-content">
-        <!-- Top Promotional Bar -->
-        <div class="top-bar">
-            <div class="container">
-                <div class="top-bar-content">
-                    <span class="top-bar-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: text-bottom; margin-right: 5px;">
-                            <rect x="1" y="3" width="15" height="13"/>
-                            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                            <circle cx="5.5" cy="18.5" r="2.5"/>
-                            <circle cx="18.5" cy="18.5" r="2.5"/>
-                        </svg>
-                        Frete grátis para todo o Brasil
-                    </span>
-                    <span class="top-bar-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: text-bottom; margin-right: 5px;">
-                            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                            <line x1="1" y1="10" x2="23" y2="10"/>
-                        </svg>
-                        Parcele em até 6x sem juros
-                    </span>
-                    <span class="top-bar-item">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: text-bottom; margin-right: 5px;">
-                            <path d="M12 2L15 8L22 9L17 14L18 21L12 18L6 21L7 14L2 9L9 8L12 2Z"/>
-                        </svg>
-                        10% de desconto no Pix
-                    </span>
-                </div>
-            </div>
-        </div>
-
         <!-- Header -->
         <header class="header">
             <div class="container">
@@ -72,18 +115,13 @@
                         <img src="logo/logo_lamel_-2.png" alt="LaMel" class="header-logo">
                     </a>
                     <div class="nav-icons">
-                        <button class="icon-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="11" cy="11" r="8"/>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <a href="admin/index.php" class="internal-area-btn" title="Área Interna" style="display:inline-flex;align-items:center;gap:6px;padding:11px 20px;border-radius:10px;background:#622331;color:#ffffff;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;text-decoration:none;box-shadow:0 2px 8px rgba(98,35,49,0.2);">
+                            <svg class="internal-area-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                             </svg>
-                        </button>
-                        <button class="icon-btn">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                                <circle cx="12" cy="7" r="4"/>
-                            </svg>
-                        </button>
+                            <span>Área Interna</span>
+                        </a>
                         <button class="cart-btn" onclick="toggleCart()">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
@@ -103,7 +141,7 @@
             <div class="hero-overlay"></div>
             <div class="container">
                 <div class="hero-content">
-                    <h1 class="hero-title">SOFISTICAÇÃO <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; color: var(--secondary-color); margin: 0 5px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> em cada detalhe</h1>
+                    <h1 class="hero-title">SOFISTICAÇÃO <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; color: var(--secondary-color); margin: 0 5px;"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> <span class="hero-title-accent">em cada detalhe</span></h1>
                     <p class="hero-subtitle">Peças exclusivas para mulheres que valorizam estilo, elegância e autenticidade.</p>
                     <a href="#produtos" class="btn btn-primary">COMPRE AGORA →</a>
                 </div>
@@ -160,15 +198,14 @@
             </div>
         </section>
 
-        <!-- Products Section -->
+        <!-- Products / Collections Section -->
         <section id="produtos" class="products-section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">COLEÇÃO Destaques da Semana</h2>
-                    <a href="#produtos" class="view-all-btn">VER TODAS →</a>
+                    <h2 class="section-title">Nossas Coleções</h2>
                 </div>
-                <div class="products-grid" id="products-grid">
-                    <!-- Products will be loaded by JavaScript -->
+                <div id="collections-catalog" class="collections-catalog">
+                    <!-- Coleções e produtos carregados via JavaScript -->
                 </div>
             </div>
         </section>
@@ -305,7 +342,7 @@
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <p class="footer-text">© 2024 LaMel. Todos os direitos reservados.</p>
+                    <p class="footer-text">© <span id="footer-year">2024</span> LaMel. Todos os direitos reservados.</p>
                 </div>
             </div>
         </footer>
@@ -330,7 +367,7 @@
                 <span class="total-label">Total:</span>
                 <span class="total-value" id="cart-total">R$ 0,00</span>
             </div>
-            <button class="btn btn-whatsapp" onclick="checkoutWhatsApp()">
+            <button type="button" class="btn btn-whatsapp" onclick="openCheckoutModal()">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                 </svg>
@@ -342,6 +379,136 @@
     <!-- Cart Overlay -->
     <div id="cart-overlay" class="cart-overlay" onclick="toggleCart()"></div>
 
+    <!-- Checkout Modal -->
+    <div id="checkout-modal" class="checkout-modal" aria-hidden="true">
+        <div class="checkout-modal-overlay" onclick="closeCheckoutModal()"></div>
+        <div class="checkout-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="checkout-modal-title">
+            <button type="button" class="checkout-modal-close" onclick="closeCheckoutModal()" aria-label="Fechar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="checkout-modal-header">
+                <h2 id="checkout-modal-title" class="checkout-modal-title">Finalizar pedido</h2>
+                <p class="checkout-modal-subtitle">Preencha seus dados para enviar o pedido pelo WhatsApp</p>
+            </div>
+
+            <div class="checkout-order-summary" id="checkout-order-summary"></div>
+
+            <form id="checkout-form" class="checkout-form" onsubmit="submitCheckoutWhatsApp(event)">
+                <div class="checkout-field">
+                    <label for="checkout-name">Nome completo *</label>
+                    <input type="text" id="checkout-name" name="name" class="checkout-input" placeholder="Seu nome completo" required>
+                </div>
+                <div class="checkout-field">
+                    <label for="checkout-phone">Telefone / WhatsApp *</label>
+                    <input type="tel" id="checkout-phone" name="phone" class="checkout-input" placeholder="(31) 99999-9999" required>
+                </div>
+                <div class="checkout-field">
+                    <label for="checkout-address">Endereço completo *</label>
+                    <input type="text" id="checkout-address" name="address" class="checkout-input" placeholder="Rua, número, bairro" required>
+                </div>
+                <div class="checkout-field-row">
+                    <div class="checkout-field">
+                        <label for="checkout-cep">CEP *</label>
+                        <input type="text" id="checkout-cep" name="cep" class="checkout-input" placeholder="00000-000" required>
+                    </div>
+                    <div class="checkout-field">
+                        <label for="checkout-city">Cidade *</label>
+                        <input type="text" id="checkout-city" name="city" class="checkout-input" placeholder="Sua cidade" required>
+                    </div>
+                </div>
+                <div class="checkout-field">
+                    <span class="checkout-label">Forma de pagamento *</span>
+                    <div class="checkout-payment-options">
+                        <label class="checkout-payment-option">
+                            <input type="radio" name="payment" value="Pix (10% de desconto)" required>
+                            <span>Pix <small>10% off</small></span>
+                        </label>
+                        <label class="checkout-payment-option">
+                            <input type="radio" name="payment" value="Cartão (até 6x sem juros)">
+                            <span>Cartão <small>6x sem juros</small></span>
+                        </label>
+                        <label class="checkout-payment-option">
+                            <input type="radio" name="payment" value="Dinheiro">
+                            <span>Dinheiro</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="checkout-field">
+                    <label for="checkout-notes">Observações</label>
+                    <textarea id="checkout-notes" name="notes" class="checkout-textarea" rows="3" placeholder="Tamanho, cor, referência ou outra informação"></textarea>
+                </div>
+                <div class="checkout-actions">
+                    <button type="submit" class="btn btn-whatsapp checkout-submit">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                        </svg>
+                        Enviar pedido no WhatsApp
+                    </button>
+                    <button type="button" class="btn btn-outline checkout-back" onclick="closeCheckoutModal()">Voltar ao carrinho</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="product-modal" aria-hidden="true">
+        <div class="product-modal-overlay" onclick="closeProductModal()"></div>
+        <div class="product-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <button type="button" class="product-modal-close" onclick="closeProductModal()" aria-label="Fechar">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+
+            <div class="product-modal-body">
+                <div class="product-modal-gallery">
+                    <div class="modal-main-image-wrap">
+                        <button type="button" class="gallery-nav gallery-prev" id="modal-prev" onclick="changeModalImage(-1)" aria-label="Foto anterior">‹</button>
+                        <img id="modal-main-image" src="" alt="" onclick="openGalleryLightbox()">
+                        <button type="button" class="gallery-nav gallery-next" id="modal-next" onclick="changeModalImage(1)" aria-label="Próxima foto">›</button>
+                    </div>
+                    <div class="modal-thumbnails" id="modal-thumbnails"></div>
+                    <button type="button" class="btn-gallery-open" onclick="openGalleryLightbox()">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2"/>
+                            <circle cx="8.5" cy="8.5" r="1.5"/>
+                            <path d="M21 15l-5-5L5 21"/>
+                        </svg>
+                        Ver fotos em galeria
+                    </button>
+                </div>
+
+                <div class="product-modal-info">
+                    <span id="modal-badge" class="product-badge modal-badge hidden"></span>
+                    <h2 id="modal-title" class="modal-title"></h2>
+                    <p id="modal-description" class="modal-description"></p>
+                    <span id="modal-size" class="product-size"></span>
+                    <div class="product-price-section">
+                        <p id="modal-price" class="product-price"></p>
+                        <p id="modal-installment" class="product-installment"></p>
+                    </div>
+                    <button type="button" class="add-to-cart modal-add-cart" id="modal-add-cart">Adicionar ao carrinho</button>
+                    <a href="#" class="btn-back-home" onclick="goToHomePage(); return false;">← Voltar para página inicial</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gallery Lightbox -->
+    <div id="gallery-lightbox" class="gallery-lightbox" aria-hidden="true">
+        <div class="gallery-lightbox-overlay" onclick="closeGalleryLightbox()"></div>
+        <button type="button" class="gallery-lightbox-close" onclick="closeGalleryLightbox()" aria-label="Fechar galeria">×</button>
+        <button type="button" class="gallery-lightbox-nav gallery-prev" onclick="changeLightboxImage(-1)" aria-label="Anterior">‹</button>
+        <img id="lightbox-image" src="" alt="">
+        <button type="button" class="gallery-lightbox-nav gallery-next" onclick="changeLightboxImage(1)" aria-label="Próxima">›</button>
+        <p class="gallery-lightbox-counter" id="lightbox-counter">1 / 1</p>
+    </div>
+
     <!-- Floating WhatsApp Button -->
     <a href="https://wa.me/5531999582428?text=Ol%C3%A1!%20Gostaria%20de%20saber%20mais%20sobre%20os%20produtos%20da%20LaMel" target="_blank" class="whatsapp-float">
         <svg viewBox="0 0 32 32" class="whatsapp-icon">
@@ -349,6 +516,6 @@
         </svg>
     </a>
 
-    <script src="script.js"></script>
+    <script src="script.js?v=6"></script>
 </body>
 </html>

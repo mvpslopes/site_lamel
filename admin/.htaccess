@@ -1,0 +1,11 @@
+# LaMel Admin
+
+DirectoryIndex index.php index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /admin/
+    RewriteRule ^$ index.php [L]
+</IfModule>
+
+Options -Indexes
