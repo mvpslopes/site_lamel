@@ -16,5 +16,7 @@ return [
         'max_size' => 5242880,
         'allowed_mimes' => ['image/jpeg', 'image/png', 'image/webp'],
         'allowed_ext' => ['jpg', 'jpeg', 'png', 'webp'],
+        'video_max_size' => 52428800,
+        'video_allowed_mimes' => ['video/mp4', 'video/webm', 'video/quicktime'],
     ],
 ];

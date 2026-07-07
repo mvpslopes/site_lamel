@@ -21,6 +21,7 @@ $data = $userRow ?: [
     'username' => '',
     'full_name' => '',
     'email' => '',
+    'profile_image' => '',
     'role' => 'admin',
     'is_active' => 1,
 ];
@@ -32,6 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'username' => trim($_POST['username'] ?? ''),
         'full_name' => trim($_POST['full_name'] ?? ''),
         'email' => trim($_POST['email'] ?? ''),
+        'profile_image' => $userRow['profile_image'] ?? '',
         'role' => $_POST['role'] === 'root' ? 'root' : 'admin',
         'is_active' => isset($_POST['is_active']) ? 1 : 0,
     ];
@@ -43,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($data['full_name'] === '') $errors[] = 'Informe o nome completo.';
     if (!$userRow && $password === '') $errors[] = 'Informe a senha do novo usuário.';
     if ($password !== '' && strlen($password) < 8) $errors[] = 'A senha deve ter no mínimo 8 caracteres.';
-    if ($password !== $passwordConfirm) $errors[] = 'As senhas não conferem.';
+    if (!$userRow && $password !== $passwordConfirm) $errors[] = 'As senhas não conferem.';
 
     if (!$errors) {
         $usernameCheck = db()->prepare('SELECT id FROM users WHERE username = ? AND id != ? LIMIT 1');
@@ -53,28 +55,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    try {
+        if (!$errors && !empty($_FILES['profile_image']['name'])) {
+            $uploaded = handle_profile_image_upload($_FILES['profile_image'], $data['username']);
+            if ($uploaded) {
+                if ($userRow && !empty($userRow['profile_image'])) {
+                    delete_public_file($userRow['profile_image']);
+                }
+                $data['profile_image'] = $uploaded;
+            }
+        }
+    } catch (Throwable $e) {
+        $errors[] = $e->getMessage();
+    }
+
     if (!$errors) {
         if ($userRow) {
             if ($password !== '') {
                 $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-                $stmt = db()->prepare('UPDATE users SET username = ?, full_name = ?, email = ?, role = ?, is_active = ?, password_hash = ? WHERE id = ?');
+                $stmt = db()->prepare('UPDATE users SET username = ?, full_name = ?, email = ?, profile_image = ?, role = ?, is_active = ?, password_hash = ? WHERE id = ?');
                 $stmt->execute([
-                    $data['username'], $data['full_name'], $data['email'] ?: null,
+                    $data['username'], $data['full_name'], $data['email'] ?: null, $data['profile_image'] ?: null,
                     $data['role'], $data['is_active'], $hash, $id
                 ]);
             } else {
-                $stmt = db()->prepare('UPDATE users SET username = ?, full_name = ?, email = ?, role = ?, is_active = ? WHERE id = ?');
+                $stmt = db()->prepare('UPDATE users SET username = ?, full_name = ?, email = ?, profile_image = ?, role = ?, is_active = ? WHERE id = ?');
                 $stmt->execute([
-                    $data['username'], $data['full_name'], $data['email'] ?: null,
+                    $data['username'], $data['full_name'], $data['email'] ?: null, $data['profile_image'] ?: null,
                     $data['role'], $data['is_active'], $id
                 ]);
             }
+
+            if ((int) $id === (int) auth_user()['id']) {
+                auth_user(true);
+            }
+
             flash('success', 'Usuário atualizado com sucesso.');
         } else {
             $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
-            $stmt = db()->prepare('INSERT INTO users (username, password_hash, full_name, email, role, is_active) VALUES (?, ?, ?, ?, ?, ?)');
+            $stmt = db()->prepare('INSERT INTO users (username, password_hash, full_name, email, profile_image, role, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)');
             $stmt->execute([
-                $data['username'], $hash, $data['full_name'], $data['email'] ?: null,
+                $data['username'], $hash, $data['full_name'], $data['email'] ?: null, $data['profile_image'] ?: null,
                 $data['role'], $data['is_active']
             ]);
             flash('success', 'Usuário criado com sucesso.');

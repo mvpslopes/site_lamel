@@ -9,6 +9,7 @@ if (Test-Path $dist) {
 New-Item -ItemType Directory -Path $dist | Out-Null
 
 Copy-Item (Join-Path $root "index.html") $dist
+Copy-Item (Join-Path $root "privacidade.html") $dist
 Copy-Item (Join-Path $root "script.js") $dist
 Copy-Item (Join-Path $root "styles.css") $dist
 

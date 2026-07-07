@@ -72,7 +72,7 @@ const fallbackProducts = [
 
 let products = [...fallbackProducts];
 let collections = [];
-let productsGridClickBound = false;
+let catalogClickBound = false;
 
 function normalizeId(id) {
     const n = Number(id);
@@ -263,36 +263,76 @@ function goToHeroSlide(index) {
 let cart = [];
 let modalProduct = null;
 let modalImageIndex = 0;
+let modalSelectedSize = null;
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Hide splash screen after animation
-    setTimeout(() => {
-        const splashScreen = document.getElementById('splash-screen');
-        const mainContent = document.getElementById('main-content');
-        if (splashScreen) {
-            splashScreen.style.display = 'none';
-        }
-        if (mainContent) {
-            mainContent.classList.remove('hidden');
-        }
-    }, 2500);
+    const isReturningVisitor = document.documentElement.classList.contains('returning-visitor');
+    sessionStorage.setItem('lamel-visited', '1');
 
-    bindProductsGridClick();
+    // Splash só é exibido na primeira visita da sessão
+    if (!isReturningVisitor) {
+        setTimeout(() => {
+            const splashScreen = document.getElementById('splash-screen');
+            if (splashScreen) {
+                splashScreen.style.display = 'none';
+            }
+        }, 1600);
+    }
+
+    bindCatalogInteractions();
     initCheckoutFormHandlers();
 
-    // Carregar produtos da API e inicializar vitrine
-    loadCatalogData();
+    // Carregar produtos da API e inicializar vitrine (somente na home)
+    if (document.getElementById('collections-catalog')) {
+        loadCatalogData();
+    }
 
     // Load cart from localStorage
-    loadCart();
+    if (document.getElementById('cart-sidebar')) {
+        loadCart();
+    }
 
     // Update footer year
     const footerYear = document.getElementById('footer-year');
     if (footerYear) {
         footerYear.textContent = new Date().getFullYear();
     }
+
+    initPrivacyConsent();
 });
+
+const PRIVACY_CONSENT_KEY = 'lamel-privacy-consent';
+
+function initPrivacyConsent() {
+    const bar = document.getElementById('privacy-bar');
+    if (!bar) return;
+
+    if (localStorage.getItem(PRIVACY_CONSENT_KEY) === '1') {
+        bar.hidden = true;
+        return;
+    }
+
+    bar.hidden = false;
+    requestAnimationFrame(() => {
+        bar.classList.add('is-visible');
+        document.body.classList.add('privacy-bar-visible');
+    });
+}
+
+function acceptPrivacyConsent() {
+    localStorage.setItem(PRIVACY_CONSENT_KEY, '1');
+
+    const bar = document.getElementById('privacy-bar');
+    if (!bar) return;
+
+    bar.classList.remove('is-visible');
+    document.body.classList.remove('privacy-bar-visible');
+
+    bar.addEventListener('transitionend', () => {
+        bar.hidden = true;
+    }, { once: true });
+}
 
 async function loadCatalogData() {
     try {
@@ -311,9 +351,13 @@ async function loadCatalogData() {
             description: product.description || '',
             price: Number(product.price),
             size: product.size || '',
+            sizeType: product.size_type || 'none',
+            sizes: Array.isArray(product.sizes) ? product.sizes : [],
             badge: product.badge || null,
+            isFeatured: Boolean(Number(product.is_featured)),
             image: product.image,
-            images: product.images && product.images.length ? product.images : [product.image]
+            images: product.images && product.images.length ? product.images : [product.image],
+            videos: Array.isArray(product.videos) ? product.videos : []
         }));
 
         if (Array.isArray(data.collections)) {
@@ -354,35 +398,80 @@ async function loadCatalogData() {
     }
 
     initHeroSlideshow();
+    renderNovidades();
     renderCollectionsCatalog();
     openProductFromHash();
 }
 
-function bindProductsGridClick() {
-    const catalog = document.getElementById('collections-catalog');
-    if (!catalog || productsGridClickBound) return;
+function bindCatalogInteractions() {
+    if (catalogClickBound) return;
+    catalogClickBound = true;
 
-    productsGridClickBound = true;
-    catalog.addEventListener('click', (event) => {
+    document.addEventListener('click', (event) => {
         const addBtn = event.target.closest('.add-to-cart');
         if (addBtn) {
-            event.stopPropagation();
             const card = addBtn.closest('.product-card');
-            if (card) addToCart(card.dataset.productId);
+            if (card) {
+                event.stopPropagation();
+                const product = findProduct(card.dataset.productId);
+                if (product && product.sizes && product.sizes.length) {
+                    openProductModal(card.dataset.productId);
+                } else {
+                    addToCart(card.dataset.productId);
+                }
+            }
             return;
         }
 
         const favBtn = event.target.closest('.favorite-btn');
         if (favBtn) {
-            event.stopPropagation();
             const card = favBtn.closest('.product-card');
-            if (card) toggleFavorite(card.dataset.productId);
+            if (card) {
+                event.stopPropagation();
+                toggleFavorite(card.dataset.productId);
+            }
             return;
         }
 
         const card = event.target.closest('.product-card');
         if (card) openProductModal(card.dataset.productId);
     });
+}
+
+function getFeaturedProducts() {
+    const featured = products.filter(product => product.isFeatured);
+    if (featured.length >= 3) return featured.slice(0, 8);
+    return products.slice(0, Math.min(8, products.length));
+}
+
+function renderNovidades() {
+    const section = document.getElementById('novidades-section');
+    const grid = document.getElementById('novidades-grid');
+    if (!section || !grid) return;
+
+    const featured = getFeaturedProducts();
+    if (!featured.length) {
+        section.classList.add('hidden');
+        return;
+    }
+
+    grid.innerHTML = '';
+    featured.forEach(product => grid.appendChild(createProductCard(product)));
+    section.classList.remove('hidden');
+}
+
+function formatProductSizeLabel(product) {
+    if (product.sizes && product.sizes.length) {
+        if (product.sizes.length <= 4) {
+            return product.sizes.join(', ');
+        }
+        return `${product.sizes[0]} – ${product.sizes[product.sizes.length - 1]}`;
+    }
+    return product.size || '';
+}
+
+function getCartKey(productId, size = '') {
+    return `${normalizeId(productId)}__${size || '-'}`;
 }
 
 function createProductCard(product) {
@@ -410,8 +499,7 @@ function createProductCard(product) {
         </div>
         <div class="product-info">
             <h3 class="product-name">${product.name}</h3>
-            <p class="product-description">${product.description}</p>
-            <span class="product-size">${product.size}</span>
+            <span class="product-size">${formatProductSizeLabel(product)}</span>
             <div class="product-price-section">
                 <p class="product-price">R$ ${product.price.toFixed(2).replace('.', ',')}</p>
                     <p class="product-installment">${installment}</p>
@@ -434,6 +522,38 @@ function createProductCard(product) {
     });
     observer.observe(productCard);
     return productCard;
+}
+
+function buildCollectionHeaderHTML(collection, count) {
+    const countLabel = `${count} ${count === 1 ? 'peça' : 'peças'}`;
+    const descriptionHtml = collection.description
+        ? `<p class="collection-description">${collection.description}</p>`
+        : '';
+
+    if (collection.coverImage) {
+        return `
+            <div class="collection-banner" style="background-image: url('${collection.coverImage}')">
+                <div class="collection-banner-overlay"></div>
+                <div class="collection-banner-content">
+                    <div>
+                        <h3 class="collection-title">${collection.name}</h3>
+                        ${descriptionHtml}
+                    </div>
+                    <span class="collection-count">${countLabel}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    return `
+        <div class="collection-block-header">
+            <div>
+                <h3 class="collection-title">${collection.name}</h3>
+                ${descriptionHtml}
+            </div>
+            <span class="collection-count">${countLabel}</span>
+        </div>
+    `;
 }
 
 function renderCollectionsCatalog() {
@@ -484,26 +604,7 @@ function renderCollectionsCatalog() {
         block.className = 'collection-block';
         block.id = `colecao-${collection.slug}`;
 
-        const coverHtml = collection.coverImage
-            ? `<img src="${collection.coverImage}" alt="${collection.name}" class="collection-cover">`
-            : '';
-
-        const descriptionHtml = collection.description
-            ? `<p class="collection-description">${collection.description}</p>`
-            : '';
-
-        block.innerHTML = `
-            <div class="collection-block-header">
-                <div class="collection-block-title-wrap">
-                    ${coverHtml}
-                    <div>
-                        <h3 class="collection-title">${collection.name}</h3>
-                        ${descriptionHtml}
-                    </div>
-                </div>
-                <span class="collection-count">${sectionProducts.length} ${sectionProducts.length === 1 ? 'peça' : 'peças'}</span>
-            </div>
-        `;
+        block.innerHTML = buildCollectionHeaderHTML(collection, sectionProducts.length);
 
         const grid = document.createElement('div');
         grid.className = 'products-grid';
@@ -538,12 +639,60 @@ function openProductFromHash() {
 }
 
 // Product Modal
+function getModalMediaItems() {
+    if (!modalProduct) return [];
+
+    const images = (modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image])
+        .map(src => ({ type: 'image', src }));
+    const videos = (modalProduct.videos || []).map(src => ({ type: 'video', src }));
+
+    return [...images, ...videos];
+}
+
+function renderModalSizePicker(product) {
+    const picker = document.getElementById('modal-size-picker');
+    const options = document.getElementById('modal-size-options');
+    const sizeNote = document.getElementById('modal-size');
+    const sizeError = document.getElementById('modal-size-error');
+
+    modalSelectedSize = null;
+    if (sizeError) sizeError.classList.add('hidden');
+
+    if (!picker || !options) {
+        if (sizeNote) sizeNote.textContent = formatProductSizeLabel(product);
+        return;
+    }
+
+    if (product.sizes && product.sizes.length) {
+        picker.classList.remove('hidden');
+        if (sizeNote) sizeNote.textContent = product.size || '';
+        options.innerHTML = product.sizes.map(size => `
+            <button type="button" class="size-option" data-size="${size}" onclick="selectModalSize('${size}')">${size}</button>
+        `).join('');
+    } else {
+        picker.classList.add('hidden');
+        options.innerHTML = '';
+        if (sizeNote) sizeNote.textContent = formatProductSizeLabel(product);
+    }
+}
+
+function selectModalSize(size) {
+    modalSelectedSize = size;
+    const sizeError = document.getElementById('modal-size-error');
+    if (sizeError) sizeError.classList.add('hidden');
+
+    document.querySelectorAll('.size-option').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.size === size);
+    });
+}
+
 function openProductModal(productId) {
     const product = findProduct(productId);
     if (!product) return;
 
     modalProduct = product;
     modalImageIndex = 0;
+    modalSelectedSize = null;
 
     const modal = document.getElementById('product-modal');
     if (!modal) return;
@@ -551,7 +700,6 @@ function openProductModal(productId) {
     const badge = document.getElementById('modal-badge');
     const title = document.getElementById('modal-title');
     const description = document.getElementById('modal-description');
-    const size = document.getElementById('modal-size');
     const price = document.getElementById('modal-price');
     const installment = document.getElementById('modal-installment');
     const addCartBtn = document.getElementById('modal-add-cart');
@@ -560,12 +708,12 @@ function openProductModal(productId) {
 
     title.textContent = product.name;
     description.textContent = product.description || 'Sem descrição disponível.';
-    if (size) size.textContent = product.size || '';
     price.textContent = formatCartMoney(product.price);
     if (installment) {
         installment.textContent = getProductInstallmentSummary(product.price);
     }
     renderModalInstallmentTable(product.price);
+    renderModalSizePicker(product);
 
     if (product.badge && badge) {
         badge.textContent = product.badge;
@@ -576,7 +724,9 @@ function openProductModal(productId) {
 
     if (addCartBtn) {
         addCartBtn.onclick = () => {
-            addToCart(product.id);
+            if (addToCart(product.id, modalSelectedSize)) {
+                closeProductModal();
+            }
         };
     }
 
@@ -598,6 +748,7 @@ function closeProductModal() {
     document.body.style.overflow = '';
     closeGalleryLightbox();
     modalProduct = null;
+    modalSelectedSize = null;
 
     if (window.location.hash.match(/^#produto-\d+$/i)) {
         history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -608,25 +759,62 @@ function renderModalGallery() {
     const thumbnails = document.getElementById('modal-thumbnails');
     if (!modalProduct || !thumbnails) return;
 
-    const images = modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image];
-    thumbnails.innerHTML = images.map((src, index) => `
-        <img src="${src}" alt="Foto ${index + 1}" class="modal-thumb ${index === modalImageIndex ? 'active' : ''}" onclick="setModalImage(${index})">
-    `).join('');
+    const mediaItems = getModalMediaItems();
+    thumbnails.innerHTML = mediaItems.map((item, index) => {
+        if (item.type === 'video') {
+            return `
+                <button type="button" class="modal-thumb modal-thumb-video ${index === modalImageIndex ? 'active' : ''}" onclick="setModalImage(${index})" aria-label="Vídeo ${index + 1}">
+                    <video src="${item.src}" muted playsinline preload="metadata"></video>
+                    <span class="modal-thumb-play">▶</span>
+                </button>
+            `;
+        }
+
+        return `<img src="${item.src}" alt="Foto ${index + 1}" class="modal-thumb ${index === modalImageIndex ? 'active' : ''}" onclick="setModalImage(${index})">`;
+    }).join('');
 
     const prevBtn = document.getElementById('modal-prev');
     const nextBtn = document.getElementById('modal-next');
-    if (prevBtn) prevBtn.style.display = images.length > 1 ? 'flex' : 'none';
-    if (nextBtn) nextBtn.style.display = images.length > 1 ? 'flex' : 'none';
+    if (prevBtn) prevBtn.style.display = mediaItems.length > 1 ? 'flex' : 'none';
+    if (nextBtn) nextBtn.style.display = mediaItems.length > 1 ? 'flex' : 'none';
 }
 
 function updateModalImage() {
     if (!modalProduct) return;
 
-    const images = modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image];
+    const mediaItems = getModalMediaItems();
+    const current = mediaItems[modalImageIndex] || mediaItems[0];
     const mainImage = document.getElementById('modal-main-image');
-    if (mainImage) {
-        mainImage.src = images[modalImageIndex];
-        mainImage.alt = modalProduct.name;
+    const mainVideo = document.getElementById('modal-main-video');
+    const galleryBtn = document.querySelector('.btn-gallery-open');
+
+    if (!current) return;
+
+    if (current.type === 'video') {
+        if (mainImage) {
+            mainImage.classList.add('hidden');
+            mainImage.removeAttribute('src');
+        }
+        if (mainVideo) {
+            mainVideo.classList.remove('hidden');
+            if (mainVideo.getAttribute('src') !== current.src) {
+                mainVideo.src = current.src;
+            }
+            mainVideo.load();
+        }
+        if (galleryBtn) galleryBtn.classList.add('hidden');
+    } else {
+        if (mainVideo) {
+            mainVideo.pause();
+            mainVideo.classList.add('hidden');
+            mainVideo.removeAttribute('src');
+        }
+        if (mainImage) {
+            mainImage.classList.remove('hidden');
+            mainImage.src = current.src;
+            mainImage.alt = modalProduct.name;
+        }
+        if (galleryBtn) galleryBtn.classList.remove('hidden');
     }
 
     document.querySelectorAll('.modal-thumb').forEach((thumb, index) => {
@@ -636,10 +824,10 @@ function updateModalImage() {
 
 function setModalImage(index) {
     if (!modalProduct) return;
-    const images = modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image];
+    const mediaItems = getModalMediaItems();
     modalImageIndex = index;
-    if (modalImageIndex < 0) modalImageIndex = images.length - 1;
-    if (modalImageIndex >= images.length) modalImageIndex = 0;
+    if (modalImageIndex < 0) modalImageIndex = mediaItems.length - 1;
+    if (modalImageIndex >= mediaItems.length) modalImageIndex = 0;
     updateModalImage();
 }
 
@@ -651,11 +839,14 @@ function changeModalImage(direction) {
 function openGalleryLightbox() {
     if (!modalProduct) return;
 
+    const mediaItems = getModalMediaItems();
+    const current = mediaItems[modalImageIndex];
+    if (!current || current.type === 'video') return;
+
     const lightbox = document.getElementById('gallery-lightbox');
     const lightboxImage = document.getElementById('lightbox-image');
-    const images = modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image];
 
-    lightboxImage.src = images[modalImageIndex];
+    lightboxImage.src = current.src;
     lightboxImage.alt = modalProduct.name;
     updateLightboxCounter();
 
@@ -673,22 +864,38 @@ function closeGalleryLightbox() {
 function changeLightboxImage(direction) {
     if (!modalProduct) return;
 
-    const images = modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image];
-    modalImageIndex += direction;
-    if (modalImageIndex < 0) modalImageIndex = images.length - 1;
-    if (modalImageIndex >= images.length) modalImageIndex = 0;
+    const mediaItems = getModalMediaItems();
+    const imageIndexes = mediaItems
+        .map((item, index) => (item.type === 'image' ? index : -1))
+        .filter(index => index >= 0);
+
+    if (!imageIndexes.length) return;
+
+    const currentPos = imageIndexes.indexOf(modalImageIndex);
+    let nextPos = currentPos + direction;
+    if (nextPos < 0) nextPos = imageIndexes.length - 1;
+    if (nextPos >= imageIndexes.length) nextPos = 0;
+
+    modalImageIndex = imageIndexes[nextPos];
 
     const lightboxImage = document.getElementById('lightbox-image');
-    lightboxImage.src = images[modalImageIndex];
+    const current = mediaItems[modalImageIndex];
+    if (lightboxImage && current) {
+        lightboxImage.src = current.src;
+    }
     updateModalImage();
     updateLightboxCounter();
 }
 
 function updateLightboxCounter() {
     if (!modalProduct) return;
-    const images = modalProduct.images && modalProduct.images.length ? modalProduct.images : [modalProduct.image];
+    const mediaItems = getModalMediaItems().filter(item => item.type === 'image');
+    const current = getModalMediaItems()[modalImageIndex];
     const counter = document.getElementById('lightbox-counter');
-    if (counter) counter.textContent = `${modalImageIndex + 1} / ${images.length}`;
+    if (!counter || !current || current.type !== 'image') return;
+
+    const imageIndex = mediaItems.findIndex(item => item.src === current.src);
+    counter.textContent = `${imageIndex + 1} / ${mediaItems.length}`;
 }
 
 function goToHomePage() {
@@ -729,18 +936,30 @@ function toggleMenu() {
 }
 
 // Add to Cart
-function addToCart(productId) {
+function addToCart(productId, selectedSize = null) {
     const product = findProduct(productId);
-    if (!product) return;
+    if (!product) return false;
+
+    const sizes = product.sizes || [];
+    const size = selectedSize || (sizes.length === 1 ? sizes[0] : '');
+
+    if (sizes.length && !size) {
+        const sizeError = document.getElementById('modal-size-error');
+        if (sizeError) sizeError.classList.remove('hidden');
+        return false;
+    }
 
     const id = normalizeId(product.id);
-    const existingItem = cart.find(item => normalizeId(item.id) === id);
+    const cartKey = getCartKey(id, size);
+    const existingItem = cart.find(item => item.cartKey === cartKey);
 
     if (existingItem) {
         existingItem.quantity++;
     } else {
         cart.push({
+            cartKey,
             id,
+            size,
             name: product.name,
             price: product.price,
             image: product.image,
@@ -750,25 +969,26 @@ function addToCart(productId) {
 
     saveCart();
     updateCartUI();
-    showNotification(`${product.name} adicionado ao carrinho!`);
+    showNotification(`${product.name}${size ? ` (${size})` : ''} adicionado ao carrinho!`);
+    return true;
 }
 
 // Remove from Cart
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+function removeFromCart(cartKey) {
+    cart = cart.filter(item => item.cartKey !== cartKey);
     saveCart();
     updateCartUI();
 }
 
 // Update Quantity
-function updateQuantity(productId, change) {
-    const item = cart.find(item => item.id === productId);
-    
+function updateQuantity(cartKey, change) {
+    const item = cart.find(item => item.cartKey === cartKey);
+
     if (item) {
         item.quantity += change;
-        
+
         if (item.quantity <= 0) {
-            removeFromCart(productId);
+            removeFromCart(cartKey);
         } else {
             saveCart();
             updateCartUI();
@@ -785,7 +1005,11 @@ function saveCart() {
 function loadCart() {
     const savedCart = localStorage.getItem('lamel-cart');
     if (savedCart) {
-        cart = JSON.parse(savedCart);
+        cart = JSON.parse(savedCart).map(item => ({
+            ...item,
+            size: item.size || '',
+            cartKey: item.cartKey || getCartKey(item.id, item.size || '')
+        }));
         updateCartUI();
     }
 }
@@ -814,13 +1038,14 @@ function updateCartUI() {
                 <img src="${item.image}" alt="${item.name}" class="cart-item-image">
                 <div class="cart-item-info">
                     <h4 class="cart-item-name">${item.name}</h4>
+                    ${item.size ? `<p class="cart-item-size">Tamanho: ${item.size}</p>` : ''}
                     <p class="cart-item-price">R$ ${item.price.toFixed(2).replace('.', ',')}</p>
                     <div class="cart-item-quantity">
-                        <button class="quantity-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.cartKey}', -1)">-</button>
                         <span class="quantity-value">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                        <button class="quantity-btn" onclick="updateQuantity('${item.cartKey}', 1)">+</button>
                     </div>
-                    <button class="remove-item" onclick="removeFromCart(${item.id})">Remover</button>
+                    <button class="remove-item" onclick="removeFromCart('${item.cartKey}')">Remover</button>
                 </div>
             </div>
         `).join('');
@@ -872,9 +1097,9 @@ function buildWhatsAppOrderMessage(cartItems, customer = {}) {
 
     cartItems.forEach((item, index) => {
         const subtotal = item.price * item.quantity;
+        lines.push('', `*${index + 1}. ${item.name}*`);
+        if (item.size) lines.push(`   Tamanho: ${item.size}`);
         lines.push(
-            '',
-            `*${index + 1}. ${item.name}*`,
             `   Quantidade: ${item.quantity}`,
             `   Valor unitário: ${formatCartMoney(item.price)}`,
             `   Subtotal: *${formatCartMoney(subtotal)}*`
@@ -1207,18 +1432,29 @@ function showNotification(message) {
     }, 3000);
 }
 
-// Smooth scroll for navigation links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-    });
+// Smooth scroll for navigation links (delegado para funcionar com links gerados dinamicamente)
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+
+    const hash = link.getAttribute('href');
+    event.preventDefault();
+
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks) navLinks.classList.remove('mobile-active');
+
+    if (!hash || hash === '#') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+
+    const target = document.querySelector(hash);
+    if (target) {
+        target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
 });
 
 // Scroll animations
@@ -1245,6 +1481,8 @@ document.addEventListener('DOMContentLoaded', () => {
 let lastScroll = 0;
 window.addEventListener('scroll', () => {
     const header = document.querySelector('.header');
+    if (!header) return;
+
     const currentScroll = window.pageYOffset;
     
     if (currentScroll > 100) {
@@ -1273,5 +1511,7 @@ Object.assign(window, {
     toggleFavorite,
     openCheckoutModal,
     closeCheckoutModal,
-    submitCheckoutWhatsApp
+    submitCheckoutWhatsApp,
+    acceptPrivacyConsent,
+    selectModalSize
 });

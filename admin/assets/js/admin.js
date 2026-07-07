@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAdminSplash();
     initAdminModal();
     initImagePreviews();
+    initSizeTypePanels();
 
     const deleteForms = document.querySelectorAll('[data-confirm-delete]');
     deleteForms.forEach((form) => {
@@ -129,6 +130,7 @@ function initAdminModal() {
             modalBody.innerHTML = await response.text();
             initSlugFields(modalBody);
             initImagePreviews(modalBody);
+            initSizeTypePanels(modalBody);
             bindModalCloseButtons(modalBody);
         } catch (error) {
             modalBody.innerHTML = '<div class="alert alert-error">Erro ao carregar o formulário. Tente novamente.</div>';
@@ -186,7 +188,7 @@ function initImagePreviews(root = document) {
 
             const reader = new FileReader();
             reader.onload = (event) => {
-                box.innerHTML = `<img src="${event.target.result}" alt="Preview do produto" class="image-preview-main">`;
+                box.innerHTML = `<img src="${event.target.result}" alt="Preview da imagem" class="image-preview-main">`;
                 box.classList.add('has-image');
             };
             reader.readAsDataURL(input.files[0]);
@@ -225,4 +227,73 @@ function slugify(text) {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-+|-+$/g, '');
+}
+
+function initSizeTypePanels(root = document) {
+    const select = root.querySelector('[data-size-type-select]');
+    if (!select || select.dataset.sizePanelsBound === 'true') return;
+
+    select.dataset.sizePanelsBound = 'true';
+    const panels = root.querySelectorAll('[data-size-panel]');
+
+    const getPanelInputs = (panel) => panel.querySelectorAll('[data-size-field] input[type="checkbox"]');
+
+    const updateCount = (panel) => {
+        const counter = panel.querySelector('[data-size-count]');
+        if (!counter) return;
+
+        const total = Array.from(getPanelInputs(panel)).filter((input) => input.checked).length;
+        counter.textContent = total
+            ? `${total} tamanho${total === 1 ? '' : 's'} selecionado${total === 1 ? '' : 's'}`
+            : 'Nenhum tamanho selecionado';
+    };
+
+    const setPanelState = () => {
+        const value = select.value;
+
+        panels.forEach((panel) => {
+            const isActive = panel.dataset.sizePanel === value;
+            panel.classList.toggle('hidden', !isActive);
+
+            getPanelInputs(panel).forEach((input) => {
+                input.disabled = !isActive;
+                if (!isActive) {
+                    input.checked = false;
+                }
+            });
+
+            if (isActive) updateCount(panel);
+        });
+    };
+
+    select.addEventListener('change', setPanelState);
+
+    panels.forEach((panel) => {
+        const selectAllBtn = panel.querySelector('[data-size-select-all]');
+        const clearBtn = panel.querySelector('[data-size-clear]');
+
+        getPanelInputs(panel).forEach((input) => {
+            input.addEventListener('change', () => updateCount(panel));
+        });
+
+        if (selectAllBtn) {
+            selectAllBtn.addEventListener('click', () => {
+                getPanelInputs(panel).forEach((input) => {
+                    if (!input.disabled) input.checked = true;
+                });
+                updateCount(panel);
+            });
+        }
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                getPanelInputs(panel).forEach((input) => {
+                    input.checked = false;
+                });
+                updateCount(panel);
+            });
+        }
+    });
+
+    setPanelState();
 }

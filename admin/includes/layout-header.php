@@ -23,7 +23,7 @@ if ($showSplash) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e(admin_url('assets/css/admin.css')) ?>?v=9">
+    <link rel="stylesheet" href="<?= e(admin_url('assets/css/admin.css')) ?>?v=17">
 </head>
 <body class="admin-body">
     <?php if ($showSplash): ?>
@@ -58,6 +58,12 @@ if ($showSplash) {
                 <a href="<?= e(admin_url('collections/index.php')) ?>" class="nav-item <?= ($activeMenu ?? '') === 'collections' ? 'active' : '' ?>">
                     <span class="nav-icon">◈</span> Coleções
                 </a>
+                <a href="<?= e(admin_url('hero/index.php')) ?>" class="nav-item <?= ($activeMenu ?? '') === 'hero' ? 'active' : '' ?>">
+                    <span class="nav-icon">◐</span> Hero do site
+                </a>
+                <a href="<?= e(admin_url('profile.php')) ?>" class="nav-item <?= ($activeMenu ?? '') === 'profile' ? 'active' : '' ?>">
+                    <span class="nav-icon">◉</span> Meu perfil
+                </a>
                 <?php if (auth_is_root()): ?>
                 <a href="<?= e(admin_url('users/index.php')) ?>" class="nav-item <?= ($activeMenu ?? '') === 'users' ? 'active' : '' ?>">
                     <span class="nav-icon">◎</span> Usuários
@@ -66,13 +72,17 @@ if ($showSplash) {
             </nav>
 
             <div class="sidebar-footer">
-                <div class="user-card">
-                    <div class="user-avatar"><?= e(strtoupper(substr($user['full_name'], 0, 1))) ?></div>
+                <a href="<?= e(admin_url('profile.php')) ?>" class="user-card user-card-link">
+                    <?php if (!empty($user['profile_image'])): ?>
+                        <img src="<?= e(site_url($user['profile_image'])) ?>" alt="<?= e($user['full_name']) ?>" class="user-avatar user-avatar-img">
+                    <?php else: ?>
+                        <div class="user-avatar"><?= e(user_avatar_initial($user)) ?></div>
+                    <?php endif; ?>
                     <div>
                         <strong><?= e($user['full_name']) ?></strong>
                         <span class="user-role"><?= e(role_label($user['role'])) ?></span>
                     </div>
-                </div>
+                </a>
                 <a href="<?= e(admin_url('logout.php')) ?>" class="sidebar-link logout">Sair</a>
             </div>
         </aside>

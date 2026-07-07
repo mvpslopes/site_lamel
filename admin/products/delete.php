@@ -25,6 +25,11 @@ foreach ($images as $image) {
     delete_public_file($image['image_path']);
 }
 
+$videos = get_product_videos($id);
+foreach ($videos as $video) {
+    delete_public_file($video['video_path']);
+}
+
 delete_public_file($product['main_image']);
 
 $stmt = db()->prepare('DELETE FROM products WHERE id = ?');

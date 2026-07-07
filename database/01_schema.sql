@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `users` (
     `password_hash` VARCHAR(255) NOT NULL,
     `full_name` VARCHAR(100) NOT NULL,
     `email` VARCHAR(150) DEFAULT NULL,
+    `profile_image` VARCHAR(500) DEFAULT NULL,
     `role` ENUM('root', 'admin') NOT NULL DEFAULT 'admin',
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
     `last_login_at` DATETIME DEFAULT NULL,
@@ -58,6 +59,8 @@ CREATE TABLE IF NOT EXISTS `products` (
     `description` TEXT DEFAULT NULL,
     `price` DECIMAL(10,2) NOT NULL,
     `size_info` VARCHAR(150) DEFAULT NULL,
+    `size_type` ENUM('none', 'clothing', 'footwear') NOT NULL DEFAULT 'none',
+    `available_sizes` JSON DEFAULT NULL,
     `badge` VARCHAR(50) DEFAULT NULL,
     `main_image` VARCHAR(500) NOT NULL,
     `is_active` TINYINT(1) NOT NULL DEFAULT 1,
@@ -89,6 +92,37 @@ CREATE TABLE IF NOT EXISTS `product_images` (
     CONSTRAINT `fk_product_images_product`
         FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
         ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- Vídeos dos produtos (reels / vídeos curtos)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `product_videos` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `product_id` INT UNSIGNED NOT NULL,
+    `video_path` VARCHAR(500) NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_product_videos_product` (`product_id`),
+    CONSTRAINT `fk_product_videos_product`
+        FOREIGN KEY (`product_id`) REFERENCES `products` (`id`)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------
+-- Slides do hero (página inicial)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `hero_slides` (
+    `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `image_path` VARCHAR(500) NOT NULL,
+    `sort_order` INT NOT NULL DEFAULT 0,
+    `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+    `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_hero_slides_active` (`is_active`),
+    KEY `idx_hero_slides_sort` (`sort_order`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;

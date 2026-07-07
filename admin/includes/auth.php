@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-function auth_user(): ?array
+function auth_user(bool $refresh = false): ?array
 {
     if (empty($_SESSION['user_id'])) {
         return null;
@@ -10,8 +10,12 @@ function auth_user(): ?array
 
     static $user = null;
 
+    if ($refresh) {
+        $user = null;
+    }
+
     if ($user === null) {
-        $stmt = db()->prepare('SELECT id, username, full_name, email, role, is_active FROM users WHERE id = ? LIMIT 1');
+        $stmt = db()->prepare('SELECT id, username, full_name, email, profile_image, role, is_active FROM users WHERE id = ? LIMIT 1');
         $stmt->execute([$_SESSION['user_id']]);
         $user = $stmt->fetch() ?: null;
 

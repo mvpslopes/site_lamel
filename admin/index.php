@@ -33,9 +33,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="<?= e(admin_url('assets/css/admin.css')) ?>?v=5">
+    <link rel="stylesheet" href="<?= e(admin_url('assets/css/admin.css')) ?>?v=14">
 </head>
 <body class="login-body">
+    <div class="login-background" aria-hidden="true">
+        <img
+            src="<?= e(site_url('produtos/Vestido Ayla/vestido_ayla (1).jpeg')) ?>"
+            alt=""
+            class="login-background-image"
+        >
+        <div class="login-background-overlay"></div>
+    </div>
     <div class="login-wrapper visible" id="login-content">
     <div class="login-card">
         <img src="<?= e(site_url('logo/logo_lamel_-2.png')) ?>" alt="LaMel" class="login-logo">
