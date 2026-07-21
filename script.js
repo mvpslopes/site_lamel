@@ -1060,9 +1060,18 @@ function updateCartUI() {
 function toggleCart() {
     const cartSidebar = document.getElementById('cart-sidebar');
     const cartOverlay = document.getElementById('cart-overlay');
-    
+    if (!cartSidebar || !cartOverlay) return;
+
     cartSidebar.classList.toggle('open');
     cartOverlay.classList.toggle('open');
+    syncFloatingWhatsappVisibility();
+}
+
+function syncFloatingWhatsappVisibility() {
+    const cartIsOpen = document.getElementById('cart-sidebar')?.classList.contains('open');
+    const checkoutIsOpen = document.getElementById('checkout-modal')?.classList.contains('open');
+
+    document.body.classList.toggle('shopping-flow-open', Boolean(cartIsOpen || checkoutIsOpen));
 }
 
 // Checkout via WhatsApp
@@ -1073,8 +1082,6 @@ function formatCartMoney(value) {
 function buildWhatsAppOrderMessage(cartItems, customer = {}) {
     const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-    const isPix = (customer.payment || '').toLowerCase().includes('pix');
-    const pixTotal = isPix ? total * 0.9 : total;
     const date = new Date().toLocaleString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
@@ -1112,9 +1119,7 @@ function buildWhatsAppOrderMessage(cartItems, customer = {}) {
         `*TOTAL: ${formatCartMoney(total)}*`
     );
 
-    if (isPix) {
-        lines.push(`*TOTAL COM PIX (10% OFF): ${formatCartMoney(pixTotal)}*`);
-    } else if ((customer.payment || '').toLowerCase().includes('cartão') || (customer.payment || '').toLowerCase().includes('cartao')) {
+    if ((customer.payment || '').toLowerCase().includes('cartão') || (customer.payment || '').toLowerCase().includes('cartao')) {
         const months = Number(customer.installments) || 12;
         const quote = getInstallmentQuote(total, months);
         lines.push('');
@@ -1313,6 +1318,7 @@ function openCheckoutModal() {
     const cartOverlay = document.getElementById('cart-overlay');
     if (cartSidebar) cartSidebar.classList.remove('open');
     if (cartOverlay) cartOverlay.classList.remove('open');
+    syncFloatingWhatsappVisibility();
 }
 
 function closeCheckoutModal() {
@@ -1322,6 +1328,7 @@ function closeCheckoutModal() {
     modal.classList.remove('open');
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    syncFloatingWhatsappVisibility();
 }
 
 function submitCheckoutWhatsApp(event) {
